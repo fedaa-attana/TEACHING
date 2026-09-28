@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Match Quest - Antibacterial Drugs & Antibiotics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{ --flip: 0.6s; }
+    body{ font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; }
+    .perspective{ perspective: 1000px; }
+    .card-inner{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition: transform var(--flip) ease; transform: rotateY(180deg); }
+    .card.flipped .card-inner{ transform: rotateY(0deg); }
+    .card-face{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:0.9rem; border-radius:0.75rem; box-shadow:0 4px 12px rgba(0,0,0,0.08); -webkit-backface-visibility:hidden; backface-visibility:hidden; }
+    .card-back{ transform: rotateY(180deg); color:white; font-weight:700; font-size:1.0rem; letter-spacing:0.3px; line-height: 1.4; }
+    .matched{ opacity:0.55; transform: scale(0.97); transition: opacity .3s, transform .3s; }
+    .fade-in{ animation:fade .35s ease both; }
+    @keyframes fade{ from{ opacity:0; transform: translateY(6px);} to{opacity:1; transform:none;} }
+    .rtl{ direction: rtl; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <section id="start" class="w-full max-w-3xl p-8 bg-white rounded-2xl shadow-xl fade-in">
+    <h1 class="text-3xl sm:text-5xl font-bold text-slate-800 mb-2">Match Quest</h1>
+    <p class="text-slate-600 mb-2">Antibacterial Drugs & Antibiotics (Patrick & Gisvold)</p>
+    <div class="flex items-center gap-2 mb-6">
+      <span class="text-sm text-slate-600">Language:</span>
+      <button id="btnEN" class="px-3 py-1 rounded-lg bg-emerald-600 text-white text-sm font-semibold">EN</button>
+      <button id="btnAR" class="px-3 py-1 rounded-lg bg-slate-200 text-slate-800 text-sm font-semibold">العربية</button>
+    </div>
+    <div id="howBlocks" class="grid sm:grid-cols-2 gap-4 text-slate-700 mb-8">
+      <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl">
+        <p><span class="font-semibold text-emerald-700">Green Cards</span>: Antibacterial Class / Drug Name.</p>
+      </div>
+      <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl">
+        <p><span class="font-semibold text-indigo-700">Indigo Cards</span>: Core Structure / Mechanism / SAR Feature.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="btnStart" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform hover:scale-105 shadow-lg">Start Game</button>
+      <button id="btnHow" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-6 rounded-lg text-lg transition">How to Play</button>
+    </div>
+  </section>
+
+  <div id="howModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg">
+      <h2 id="howTitle" class="text-2xl font-bold text-slate-800 mb-2">How to Play</h2>
+      <ul id="howList" class="list-disc pl-6 text-slate-700 space-y-2">
+        <li>Click two cards to flip them.</li>
+        <li>Match the <span class="font-semibold text-emerald-700">Antibacterial Drug</span> with its correct <span class="font-semibold text-indigo-700">Structural Feature or Mechanism</span>.</li>
+        <li>Finish in fewest turns for Gold medal.</li>
+      </ul>
+      <div class="text-right mt-4">
+        <button id="btnCloseHow" class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="game" class="w-full max-w-6xl hidden">
+    <header class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4 sm:gap-0">
+      <div class="text-center sm:text-left">
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Match Quest</h1>
+      </div>
+      <div class="flex gap-2 items-center flex-wrap justify-center">
+        <button id="btnRestart" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 px-4 rounded-lg text-sm">Restart</button>
+        <button id="btnNewSet" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg text-sm">New Set</button>
+        <div class="flex items-center gap-2 ml-2">
+          <span class="text-sm text-slate-600 hidden sm:inline">Lang:</span>
+          <button id="btnEN2" class="px-2 py-1 rounded bg-emerald-600 text-white text-xs font-semibold">EN</button>
+          <button id="btnAR2" class="px-2 py-1 rounded bg-slate-200 text-slate-800 text-xs font-semibold">AR</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-3 gap-3 bg-white p-4 rounded-xl shadow mb-6">
+      <div class="text-center"><p class="text-slate-500 text-sm" data-i18n="turnsLabel">Turns</p><p id="turns" class="text-3xl font-bold text-slate-800">0</p></div>
+      <div class="text-center"><p class="text-slate-500 text-sm" data-i18n="pairsLabel">Pairs Found</p><p id="pairs" class="text-3xl font-bold text-slate-800">0 / 8</p></div>
+      <div class="text-center"><p class="text-slate-500 text-sm" data-i18n="trophiesLabel">Trophies</p><div id="trophies" class="text-3xl">&nbsp;</div></div>
+    </div>
+    <div id="board" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+  </section>
+
+  <div id="win" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full transform transition-all scale-95 opacity-0">
+      <div id="winTrophy" class="text-8xl mb-4"></div>
+      <h2 id="winTitle" class="text-3xl font-bold text-slate-800 mb-2">Excellent!</h2>
+      <p id="winMsg" class="text-slate-600 mb-6 text-lg"></p>
+      <button id="btnPlayAgain" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform hover:scale-105 shadow-lg">Play Again</button>
+    </div>
+  </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const start = document.getElementById('start');
+    const game = document.getElementById('game');
+    const board = document.getElementById('board');
+    const turnsEl = document.getElementById('turns');
+    const pairsEl = document.getElementById('pairs');
+    const trophiesEl = document.getElementById('trophies');
+    const btnStart = document.getElementById('btnStart');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnNewSet = document.getElementById('btnNewSet');
+    const win = document.getElementById('win');
+    const winTrophy = document.getElementById('winTrophy');
+    const winTitle = document.getElementById('winTitle');
+    const winMsg = document.getElementById('winMsg');
+    const btnPlayAgain = document.getElementById('btnPlayAgain');
+    const how = document.getElementById('howModal');
+    const btnHow = document.getElementById('btnHow');
+    const btnCloseHow = document.getElementById('btnCloseHow');
+    const btnEN = document.getElementById('btnEN');
+    const btnAR = document.getElementById('btnAR');
+    const btnEN2 = document.getElementById('btnEN2');
+    const btnAR2 = document.getElementById('btnAR2');
+    const howBlocks = document.getElementById('howBlocks');
+    const howTitle = document.getElementById('howTitle');
+    const howList = document.getElementById('howList');
+
+    function pair(green, indigo){ return { green:{text:green}, indigo:{text:indigo} } }
+
+    const POOL_EN = [
+      pair("Penicillins Core", "Beta-lactam ring fused to a 5-membered Thiazolidine ring"),
+      pair("Cephalosporins Core", "Beta-lactam ring fused to a 6-membered Dihydrothiazine ring"),
+      pair("Methicillin / Oxacillin", "Sterically hindered acyl side chains resisting beta-lactamase hydrolysis"),
+      pair("Clavulanic Acid / Sulbactam", "Suicide beta-lactamase inhibitor lacking antibacterial activity alone"),
+      pair("Sulfonamides", "Dihydropteroate synthase inhibitor mimicking PABA substrate"),
+      pair("Trimethoprim", "Dihydrofolate reductase (DHFR) competitive inhibitor"),
+      pair("Fluoroquinolones (Ciprofloxacin)", "Binds Bacterial DNA Gyrase / Topoisomerase IV complex"),
+      pair("Tetracyclines Core", "Octahydrotetracene-2-carboxamide with 4 fused linear rings"),
+      pair("Aminoglycosides (Gentamicin)", "Aminocyclitol ring with amino sugars binding 30S ribosomal subunit"),
+      pair("Macrolides (Erythromycin)", "14- to 16-membered lactone ring with deoxy sugars binding 50S subunit"),
+      pair("Chloramphenicol", "Nitrobenzene derivative inhibiting peptidyl transferase on 50S ribosome"),
+      pair("Vancomycin", "Glycopeptide binding D-Ala-D-Ala terminus of cell wall peptidoglycan"),
+      pair("Linezolid (Oxazolidinone)", "Binds 23S rRNA of 50S subunit preventing 70S initiation complex formation"),
+      pair("Rifampin", "Ansamycin antibiotic inhibiting bacterial DNA-dependent RNA polymerase")
+    ];
+
+    const POOL_AR = [
+      pair("نواة البنسلينات (Penicillins Core)", "حلقة بيتا لاكتام متصلة بحلقة ثياثوليدين خماسية"),
+      pair("نواة السيفالوسبورينات (Cephalosporins Core)", "حلقة بيتا لاكتام متصلة بحلقة ثنائي هيدروثيازين سداسية"),
+      pair("ميثيسيلين / أوكساسيلين (Methicillin/Oxacillin)", "سلاسل جانبية ذات إعاقة فراغية تقاوم تحلل إنزيم بيتا لاكتاميز"),
+      pair("حمض الكلافولانيك / سولباكتام", "مثبط انتحاري لإنزيم بيتا لاكتاميز يفتقر للنشاط المضاد للبكتيريا بمفرده"),
+      pair("السلفوناميدات (Sulfonamides)", "مثبط لإنزيم ثنائي هيدروبتيروات سينثيز يحاكي مركب PABA"),
+      pair("ترايميثوبريم (Trimethoprim)", "مثبط تنافسي لإنزيم ثنائي هيدروفولات ريدكتيز (DHFR)"),
+      pair("الفلوروكينولونات (سيبروفلوكساسين)", "يرتبط بمركب إنزيم حمض DNA جيراز / توبوايزوميراز IV"),
+      pair("نواة التتراسيكلينات (Tetracyclines Core)", "أوكتاهيدروتتراسين-2-كاربوكساميد مع 4 حلقات خطية مدمجة"),
+      pair("الأمينوجليكوزيدات (جنتاميسين)", "حلقة أمينوسيكليتول مع سكريات أمينية ترتبط بالوحدة الريبوسومية 30S"),
+      pair("الماكروليدات (إريثروميسين)", "حلقة لاكتون من 14-16 ذرة مع سكريات منقوصة الأوكسجين ترتبط بالوحدة 50S"),
+      pair("كلورامفينيكول (Chloramphenicol)", "مشتق نتروبنزين يثبط إنزيم بيبتيديل ترانسفيراز على الريبوسوم 50S"),
+      pair("فانكوميسين (Vancomycin)", "جليكوببتيد يرتبط بنهاية D-Ala-D-Ala في ببتيدوجليكان الجدار الخلوي"),
+      pair("لينيزوليد (Linezolid)", "يرتبط بـ 23S rRNA في الوحدة 50S لمنع تشكيل معقد البدء 70S"),
+      pair("ريفامبين (Rifampin)", "مضاد أنساميسين يثبط إنزيم RNA بوليميراز المعتمد على DNA")
+    ];
+
+    const PAIRS_PER_ROUND = 8; 
+    let flipped = []; let found = 0; let turns = 0; let lock = false; let currentRound = []; let currentPool = POOL_EN; let isArabic = false;
+
+    btnStart.addEventListener('click', () => { start.classList.add('hidden'); game.classList.remove('hidden'); newRound(true); });
+    btnRestart.addEventListener('click', () => newRound(true));
+    btnNewSet.addEventListener('click', () => newRound(false, true));
+    btnHow.addEventListener('click', () => { how.classList.remove('hidden'); how.classList.add('flex'); });
+    btnCloseHow.addEventListener('click', () => { how.classList.add('hidden'); how.classList.remove('flex'); });
+    btnPlayAgain.addEventListener('click', () => { hideWin(); newRound(true); });
+
+    function setLang(ar){
+      isArabic = !!ar; currentPool = isArabic? POOL_AR : POOL_EN;
+      document.documentElement.dir = isArabic? 'rtl':'ltr';
+      [btnEN, btnEN2].forEach(b=>{ b.classList.toggle('bg-emerald-600', !isArabic); b.classList.toggle('text-white', !isArabic); b.classList.toggle('bg-slate-200', isArabic); b.classList.toggle('text-slate-800', isArabic);});
+      [btnAR, btnAR2].forEach(b=>{ b.classList.toggle('bg-emerald-600', isArabic); b.classList.toggle('text-white', isArabic); b.classList.toggle('bg-slate-200', !isArabic); b.classList.toggle('text-slate-800', !isArabic);});
+      
+      if(isArabic){
+        howBlocks.innerHTML = `<div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl rtl"><p><span class="font-semibold text-emerald-700">بطاقات خضراء</span>: مضادات البكتيريا / الفئة.</p></div><div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl rtl"><p><span class="font-semibold text-indigo-700">بطاقات بنفسجية</span>: التركيب / آلية العمل.</p></div>`;
+        howTitle.textContent = 'طريقة اللعب';
+        howList.classList.add('rtl');
+        howList.innerHTML = `<li>انقر على بطاقتين لعكسهما.</li><li>الأخضر = <em>الدواء المضاد للبكتيريا</em>. البنفسجي = <em>التركيب / آلية العمل</em>.</li>`;
+        document.querySelectorAll('[data-i18n="turnsLabel"]').forEach(n=>n.textContent='الأدوار');
+        document.querySelectorAll('[data-i18n="pairsLabel"]').forEach(n=>n.textContent='الأزواج');
+        document.querySelectorAll('[data-i18n="trophiesLabel"]').forEach(n=>n.textContent='الكؤوس');
+      } else {
+        howBlocks.innerHTML = `<div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl"><p><span class="font-semibold text-emerald-700">Green Cards</span>: Antibacterial / Class.</p></div><div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl"><p><span class="font-semibold text-indigo-700">Indigo Cards</span>: Core Structure / Mechanism.</p></div>`;
+        howTitle.textContent = 'How to Play';
+        howList.classList.remove('rtl');
+        howList.innerHTML = `<li>Click two cards to flip them.</li><li>Green = <em>Antibacterial Drug</em>. Indigo = <em>Structure / Mechanism</em>.</li>`;
+        document.querySelectorAll('[data-i18n="turnsLabel"]').forEach(n=>n.textContent='Turns');
+        document.querySelectorAll('[data-i18n="pairsLabel"]').forEach(n=>n.textContent='Pairs Found');
+        document.querySelectorAll('[data-i18n="trophiesLabel"]').forEach(n=>n.textContent='Trophies');
+      }
+      newRound(false, true); 
+    }
+
+    [btnEN, btnEN2].forEach(b=> b && b.addEventListener('click', () => setLang(false)) );
+    [btnAR, btnAR2].forEach(b=> b && b.addEventListener('click', () => setLang(true)) );
+
+    function newRound(resetOnly=false, forceNewSet=false){
+      flipped = []; found = 0; turns = 0; lock = false;
+      board.innerHTML = ''; trophiesEl.innerHTML = '';
+      turnsEl.textContent = '0'; pairsEl.textContent = `0 / ${PAIRS_PER_ROUND}`;
+      if(!resetOnly || forceNewSet){ currentRound = pickRandomPairs(currentPool, PAIRS_PER_ROUND); }
+      const cards = [];
+      currentRound.forEach((p, i) => { cards.push(card('green', p.green.text, i+1)); cards.push(card('indigo', p.indigo.text, i+1)); });
+      shuffle(cards); cards.forEach(c => board.appendChild(renderCard(c)) ); hideWin();
+    }
+    function pickRandomPairs(pool, n){ const idx = [...Array(pool.length).keys()]; shuffle(idx); return idx.slice(0,n).map(i => pool[i]); }
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+    function card(kind, text, matchId){ return { kind, text, matchId } }
+    function renderCard(info){
+      const wrap = document.createElement('div'); wrap.className = 'card perspective h-44 sm:h-52 cursor-pointer'; wrap.dataset.matchId = info.matchId; wrap.dataset.kind = info.kind;
+      const inner = document.createElement('div'); inner.className = 'card-inner';
+      const front = document.createElement('div'); const back = document.createElement('div');
+      front.className = 'card-face font-semibold text-sm sm:text-base leading-snug'; back.className = 'card-face card-back';
+      if(info.kind==='green'){ front.classList.add('bg-emerald-100','text-emerald-900','border-2','border-emerald-300'); back.classList.add('bg-emerald-600'); back.textContent = isArabic? 'الدواء' : 'Drug'; } 
+      else { front.classList.add('bg-indigo-100','text-indigo-900','border-2','border-indigo-300'); back.classList.add('bg-indigo-600'); back.textContent = isArabic? 'التركيب/الآلية' : 'Feature'; }
+      front.textContent = info.text; inner.appendChild(front); inner.appendChild(back); wrap.appendChild(inner);
+      wrap.addEventListener('click', () => onCard(wrap));
+      return wrap;
+    }
+    function onCard(el){ if(lock || el.classList.contains('flipped') || el.classList.contains('matched')) return; el.classList.add('flipped'); flipped.push(el); if(flipped.length===2){ check(); } }
+    function check(){
+      lock = true; turns++; turnsEl.textContent = String(turns);
+      const [a,b] = flipped;
+      if((a.dataset.matchId===b.dataset.matchId) && (a.dataset.kind!==b.dataset.kind)){
+        flipped.forEach(c => c.classList.add('matched')); found++; pairsEl.textContent = `${found} / ${PAIRS_PER_ROUND}`; resetFlip();
+        if(found===PAIRS_PER_ROUND){ setTimeout(showWin, 450); }
+      } else { setTimeout(()=>{ flipped.forEach(c => c.classList.remove('flipped')); resetFlip(); }, 4000); }
+    }
+    function resetFlip(){ flipped = []; lock = false; }
+    function showWin(){
+      const { medal, label } = medalFor(turns); winTrophy.innerHTML = medal; winTitle.textContent = label;
+      winMsg.textContent = (isArabic? 'اكتملت في ' : 'Completed in ') + `${turns} ` + (isArabic? 'دورًا.' : 'turns.');
+      trophiesEl.innerHTML += medal; win.classList.remove('hidden'); win.classList.add('flex');
+      setTimeout(()=>{ const d = win.querySelector('div'); d.classList.remove('scale-95','opacity-0'); },10);
+    }
+    function hideWin(){ win.classList.add('hidden'); win.classList.remove('flex'); const d = win.querySelector('div'); d.classList.add('scale-95','opacity-0'); }
+    function medalFor(t){
+      if(t<=12) return { medal:'<span class="text-amber-400">🏆</span>', label: isArabic? 'ميدالية ذهبية!' : 'Gold Medalist!' };
+      if(t<=18) return { medal:'<span class="text-gray-400">🥈</span>', label: isArabic? 'ميدالية فضية!' : 'Silver Medalist!' };
+      return { medal:'<span class="text-orange-600">🥉</span>', label: isArabic? 'ميدالية برونزية!' : 'Bronze Medalist!' };
+    }
+    setLang(false);
+  });
+</script>
+</body>
+</html>
