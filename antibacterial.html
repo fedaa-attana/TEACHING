@@ -224,7 +224,7 @@
       if((a.dataset.matchId===b.dataset.matchId) && (a.dataset.kind!==b.dataset.kind)){
         flipped.forEach(c => c.classList.add('matched')); found++; pairsEl.textContent = `${found} / ${PAIRS_PER_ROUND}`; resetFlip();
         if(found===PAIRS_PER_ROUND){ setTimeout(showWin, 450); }
-      } else { setTimeout(()=>{ flipped.forEach(c => c.classList.remove('flipped')); resetFlip(); }, 400); }
+      } else { setTimeout(()=>{ flipped.forEach(c => c.classList.remove('flipped')); resetFlip(); }, 4000); }
     }
     function resetFlip(){ flipped = []; lock = false; }
     function showWin(){
